@@ -1,0 +1,13 @@
+package com.example.eduprojjpa;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EduprojJpaApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EduprojJpaApplication.class, args);
+    }
+
+}
