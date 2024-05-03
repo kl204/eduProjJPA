@@ -1,15 +1,25 @@
 package com.example.eduprojjpa.controller;
 
+import com.example.eduprojjpa.common.utils.SeoulDateTimeProvider;
+import com.example.eduprojjpa.entity.CourseEntity;
+import com.example.eduprojjpa.entity.EnrollEntity;
+import com.example.eduprojjpa.entity.LecMatEntity;
 import com.example.eduprojjpa.entity.UserEntity;
+import com.example.eduprojjpa.repository.CourseRepository;
+import com.example.eduprojjpa.repository.EnrollRepository;
+import com.example.eduprojjpa.repository.LecMatRepository;
 import com.example.eduprojjpa.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @AllArgsConstructor
@@ -17,31 +27,57 @@ public class StudentController {
 
 
     private final UserRepository userRepository;
-
+    private final CourseRepository courseRepository;
     private final HttpSession httpSession;
+    private final SeoulDateTimeProvider seoulDateTimeProvider;
+    private final EnrollRepository enrollRepository;
+    private final LecMatRepository lecMatRepository;
 
-    // 학생으로 로그인 하는 메서드 입니다.
-    @GetMapping("/student/login")
-    public ResponseEntity<Optional<UserEntity>> StudentLogin(@Param("userName") String userName){
+    // 학생의 수강 신청 메서드
+    @PostMapping("/student/course/enroll")
+    @Transactional
+    public ResponseEntity<String> courseOpen(@Param("courseName")String courseName) {
 
-        // 스프링 세션에 회원 정보를 넣기 전에 회원 정보가 이미 있는지 확인합니다.
-       UserEntity existingUser = userRepository.findByUsername(userName);
+        String userName = (String) httpSession.getAttribute("userName");
 
-        if (existingUser==null) {
-            // 회원 정보가 없으면 새로운 회원을 생성하여 저장합니다.
-            UserEntity newUser = new UserEntity();
-            newUser.setUserName("Student");
-            userRepository.save(newUser);
+        UserEntity userEntity = userRepository.findByUsername(userName);
+        CourseEntity courseEntity = courseRepository.findByCourseName(courseName);
 
-            // 스프링 세션에 회원 정보를 저장합니다.
-            httpSession.setAttribute("userType","Student");
+        EnrollEntity enrollEntity = new EnrollEntity();
+        enrollEntity.setUserId(userEntity.getUserId());
+        enrollEntity.setEnrolledUser(userEntity);
+        enrollEntity.setCourseId(courseEntity.getCourseId());
+        enrollEntity.setCourseEntity(courseEntity);
+        enrollEntity.setEnrollDate(seoulDateTimeProvider.getSeoulDateTime());
+        enrollRepository.save(enrollEntity);
 
-            return ResponseEntity.ok().body(Optional.of(newUser));
+        List<EnrollEntity> enrollEntityList = new ArrayList<>();
+        enrollEntityList.add(enrollEntity);
+        courseEntity.setEnrolledCourse(enrollEntityList);
+        courseRepository.save(courseEntity);
 
-        }else{
-            //회원이 이미 있으면 그대로 반환합니다.
-            return ResponseEntity.ok().body(Optional.of(existingUser));
-        }
-
+        return ResponseEntity.ok().body("Course Enrollment success");
     }
+
+    // 학생 자신의 강의 리스트 반환 메서드
+    @GetMapping("/student/course/List")
+    public ResponseEntity<List<EnrollEntity>> GetCourseList(){
+
+        String userName = (String) httpSession.getAttribute("userName");
+
+        UserEntity userEntity = userRepository.findByUsername(userName);
+
+        List<EnrollEntity> enrollEntityList = userEntity.getCourseEnroll();
+        return ResponseEntity.ok().body(enrollEntityList);
+    }
+
+    // 자료 다운로드 메서드
+    @PostMapping("/student/lec-mat-download")
+    public ResponseEntity<String> LecMatDownload(@RequestBody long courseId, String lecName){
+
+        LecMatEntity lecMatEntity = lecMatRepository.findByCourseEntity_CourseIdAndLecName(courseId,lecName);
+
+        return ResponseEntity.ok().body(lecMatEntity.getLecData());
+    }
+
 }

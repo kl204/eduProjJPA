@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class EduProjService {
 
-    //TODO 1 : 회원가입(강사 & 학생)
-    //TODO 2 : Spring Session을 통한 로그인
-    //TODO 3 : 강사의 코스 개설
+    //TODO 1 : 회원가입(강사 & 학생) -- 해결
+    //TODO 2 : Spring Session을 통한 로그인 -- 해결
+    //TODO 3 : 강사의 코스 개설 -- 해결
     //TODO 4 : 강사의 자료 업로드
     //TODO 5 : 강사의 과제 업로드
     //TODO 6 : 학생의 코스 수강신청
