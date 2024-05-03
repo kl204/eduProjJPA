@@ -3,6 +3,7 @@ package com.example.eduprojjpa.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -19,7 +20,7 @@ public class CourseEntity {
     private long courseId;
 
     @Column(name = "course_name")
-    private String courseName;
+        private String courseName;
 
     @Column(name = "course_desc")
     private String courseDesc;
@@ -29,6 +30,9 @@ public class CourseEntity {
 
     @Column(name = "course_end")
     private Date courseEnd;
+
+    @JoinColumn(name = "user_id")
+    private long userId;
 
     // 강의는 여러 개의 등록을 가질 수 있다.
     @OneToMany(mappedBy = "courseEntity")

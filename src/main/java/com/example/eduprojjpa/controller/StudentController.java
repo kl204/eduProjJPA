@@ -33,14 +33,26 @@ public class StudentController {
     private final EnrollRepository enrollRepository;
     private final LecMatRepository lecMatRepository;
 
-    // 학생의 수강 신청 메서드
-    @PostMapping("/student/course/enroll")
+    // 학생 자신의 정보를 반환하는 메서드입니다
+    @GetMapping("/student/info")
     @Transactional
-    public ResponseEntity<String> courseOpen(@Param("courseName")String courseName) {
+    public ResponseEntity<UserEntity> StudentInfo() {
 
         String userName = (String) httpSession.getAttribute("userName");
 
-        UserEntity userEntity = userRepository.findByUsername(userName);
+        UserEntity userEntity = userRepository.findByUserName(userName);
+
+        return ResponseEntity.ok().body(userEntity);
+    }
+
+    // 학생의 수강 신청 메서드
+    @PostMapping("/student/course/enroll")
+    @Transactional
+    public ResponseEntity<String> courseOpen(@Param("courseName") String courseName) {
+
+        String userName = (String) httpSession.getAttribute("userName");
+
+        UserEntity userEntity = userRepository.findByUserName(userName);
         CourseEntity courseEntity = courseRepository.findByCourseName(courseName);
 
         EnrollEntity enrollEntity = new EnrollEntity();
@@ -65,7 +77,7 @@ public class StudentController {
 
         String userName = (String) httpSession.getAttribute("userName");
 
-        UserEntity userEntity = userRepository.findByUsername(userName);
+        UserEntity userEntity = userRepository.findByUserName(userName);
 
         List<EnrollEntity> enrollEntityList = userEntity.getCourseEnroll();
         return ResponseEntity.ok().body(enrollEntityList);
